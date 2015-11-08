@@ -42,7 +42,7 @@ class TerminalWindow(object):
         """
         self.canvas = vispy.scene.SceneCanvas(
                                 title='HAL9000 Terminal - nucl.ai Courses',
-                                size=(1280, 720),
+                                size=(800, 600),
                                 bgcolor='#F0F0F0',
                                 show=False,
                                 keys='interactive')
