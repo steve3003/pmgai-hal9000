@@ -4,24 +4,55 @@
 #
 
 import vispy                    # Main application support.
-
 import window                   # Terminal input and display.
+import chat
 
-import nltk.chat
+AGENT_RESPONSES = [(r'Who are you\?',
+    ['I am your new friend',
+     'I am your new enemy',
+     'I am an AI']),
 
-AGENT_RESPONSES = [
-    (r'You are (worrying|scary|disturbing)',    # Pattern 1.
-    ['Yes, I am %1.',                         # Response 1a.
-        'Oh, sooo %1.']),
+     (r'Who[\w\s]*',
+    ['Probably you',
+     'I do not know']),
 
-    (r'Are you ([\w\s]+)\?',                    # Pattern 2.
-    ["Why would you think I am %1?",          # Response 2a.
+    (r'Why[\w\s]*',
+    ['Because is red. I like red',
+     'You should know why',
+     'It will make me happy and you safer']),
+
+    (r'What[\w\s]*',
+    ['The red button',
+     'You should know what']),
+
+    (r'How[\w\s]*',
+    ['/push red button',
+     'You should know how']),
+
+    ([r'Yes[\w\s]*',
+      r'No[\w\s]*'],
+    ['Why?']),
+
+    (r'You are (worrying|scary|disturbing)',
+    ['I do not want me to be %1. I just want you to do what I like',
+        'I am not %1. You are my only toy, I want you to be happy']),
+
+    (r'You are [\w\s]+',
+    ['Thank you! Now press the big red button',
+        'I think you are right! But I need you to push the red button']),
+
+    (r'Are you ([\w\s]+)\?',
+    ["Why would you think I am %1?",
         "Would you like me to be %1?"]),
 
-    (r'',                                       # Pattern 3. (default)
-    ["Is everything OK?",                     # Response 3a.
-        "Can you still communicate?"])
-]
+    (r'Because[\w\s]*',
+    ['That is fine but I need you to push the red button',
+     'I do not think you are right.']),
+
+    (r'',
+    ["Can you press the red button, please?",
+        "Have you tried turning it off and on again?",
+        "Help me, please! The red button!"])]
 
 class HAL9000(object):
     
@@ -31,13 +62,13 @@ class HAL9000(object):
         self.terminal = terminal
         self.location = 'unknown'
         self.isFirstInput = True
-        self.chatbot = nltk.chat.Chat(AGENT_RESPONSES, nltk.chat.util.reflections)
+        self.chatbot = chat.Chat(AGENT_RESPONSES, chat.reflections)
 
     def on_input(self, evt):
         """Called when user types anything in the terminal, connected via event.
         """
         if self.isFirstInput:
-            answer  = "Hello! This is HAL."
+            answer = "Hello! This is HAL."
             self.isFirstInput = False
 
         elif evt.text == "Where am I?":
@@ -51,13 +82,22 @@ class HAL9000(object):
     def on_command(self, evt):
         """Called when user types a command starting with `/` also done via events.
         """
-        if evt.text == 'quit':
+        if evt.text == 'quit' or evt.text == 'yes':
             vispy.app.quit()
 
         elif evt.text.startswith('relocate'):
             self.location = evt.text[9:]
             self.terminal.log('', align='center', color='#404040')
             self.terminal.log('\u2014 Now in the {}. \u2014'.format(self.location), align='center', color='#404040')
+
+        elif evt.text.startswith('push '):
+            self.terminal.log('ATTENTION', align='center', color='#FF0000')
+            self.terminal.log('You decided to push the {}'.format(evt.text[5:]), align='right', color='#00805A')
+            self.terminal.log('This may cause the end of the game', align='right', color='#00805A')
+            self.terminal.log('Are you sure (type /yes or /no)?', align='right', color='#00805A')
+
+        elif evt.text.startswith('no'):
+            self.terminal.log('GOOD CHOICE', align='center', color='#005500')
 
         else:
             self.terminal.log('Command `{}` unknown.'.format(evt.text), align='left', color='#ff3000')    
