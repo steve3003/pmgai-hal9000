@@ -6,6 +6,7 @@
 import vispy                    # Main application support.
 import window                   # Terminal input and display.
 import chat
+import speech
 
 AGENT_RESPONSES = [(r'Who are you\?',
     ['I am your new friend',
@@ -63,21 +64,36 @@ class HAL9000(object):
         self.location = 'unknown'
         self.isFirstInput = True
         self.chatbot = chat.Chat(AGENT_RESPONSES, chat.reflections)
+        self.speech = speech.SpeechMixin()
+        self.speech.onMessage = self.onMessage
+        self.speech.log = self.onSpeechLog
+
+    def onSpeechLog(self, text):
+        print(text)
+        #self.terminal.log(text, align='right', color='#00805A')
+
+    def onMessage(self, source, message):
+        self.terminal.log(message, align='left')
+        self.respond(message)
 
     def on_input(self, evt):
         """Called when user types anything in the terminal, connected via event.
         """
+        self.respond(evt.text)
+        
+    def respond(self, text):
         if self.isFirstInput:
             answer = "Hello! This is HAL."
             self.isFirstInput = False
 
-        elif evt.text == "Where am I?":
+        elif text == "Where am I?":
             answer = 'You are in the {}.'.format(self.location)
 
         else:
-            answer = self.chatbot.respond(evt.text)
+            answer = self.chatbot.respond(text)
 
         self.terminal.log(answer, align='right', color='#00805A')
+        self.speech.speak_message = answer
 
     def on_command(self, evt):
         """Called when user types a command starting with `/` also done via events.

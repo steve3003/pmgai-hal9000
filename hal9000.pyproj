@@ -25,6 +25,7 @@
   <ItemGroup>
     <Compile Include="chat.py" />
     <Compile Include="main.py" />
+    <Compile Include="speech.py" />
     <Compile Include="window.py" />
   </ItemGroup>
   <ItemGroup>
